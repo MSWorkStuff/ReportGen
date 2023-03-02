@@ -8,42 +8,10 @@ public class OpenAIService
     private OpenAIClient _openAIClient { get; init; }
     public OpenAIService() => _openAIClient = CreateClient();
 
-
-    public async IAsyncEnumerable<string> GetCompletionsSinglePrompt(
-        string prompt,
-        TimeSpan minimumResponseTokenDelay = default) {
-        CompletionsOptions requestOptions = new CompletionsOptions()
-        {
-            Prompt = { prompt },
-            MaxTokens = 512,
-            LogProbability = 1,
-        };
-
-        Response<StreamingCompletions> response = await _openAIClient.GetCompletionsStreamingAsync(
+    public Completions GetCompletionsSimple(CompletionsOptions completionsOptions) {
+        Response<Completions> response = _openAIClient.GetCompletions(
                 s_Completions_Deployment_Id,
-                requestOptions);
-        using StreamingCompletions streamingCompletions = response.Value;
-
-        await foreach (StreamingChoice choice in streamingCompletions.GetChoicesStreaming())
-        {
-            await foreach (string choiceToken in choice.GetTextStreaming())
-            {
-                yield return choiceToken;
-            }
-        }
-    }
-
-    public async Task<Completions> GetCompletionsSimple(string prompt) {
-        CompletionsOptions requestOptions = new CompletionsOptions()
-        {
-            Prompt = { prompt },
-            MaxTokens = 512,
-            LogProbability = 1,
-        };
-
-        Response<Completions> response = await _openAIClient.GetCompletionsAsync(
-                s_Completions_Deployment_Id,
-                requestOptions);
+                completionsOptions);
 
         return response.Value;
     }
