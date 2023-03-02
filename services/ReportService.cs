@@ -1,60 +1,59 @@
 using System.Text.Json;
 using System.IO;
+using Azure.AI.OpenAI;
+
 namespace Services;
 
 public class ReportService {
 
-    public void Report<Input, Output>(
-            List<Entry<Input, Output>> entries,
-            Func<Input, Output> generator) {
+    public void Report(
+            List<CompletionsEntry> entries)
+    {
         using var fileWriter = GetFileHandle();
 
         foreach(var entry in entries) {
             fileWriter.WriteLine($"## {entry.title}");
             fileWriter.WriteLine();
 
-            fileWriter.WriteLine($"### Input JSON");
-            var inputJson = JsonSerializer.Serialize(entry.input, new JsonSerializerOptions { WriteIndented = true });
-            fileWriter.WriteLine(inputJson);
-            fileWriter.WriteLine();
+            entry.inputQuery.Invoke(fileWriter, entry.input);
 
-            fileWriter.WriteLine($"### Output JSON");
-            var output = generator.Invoke(entry.input);
-            var outputJson = JsonSerializer.Serialize(output, new JsonSerializerOptions { WriteIndented = true });
-            fileWriter.WriteLine(outputJson);
-            fileWriter.WriteLine();
+            var output = entry.generator.Invoke(entry.input);
+
+            entry.ouputQuery.Invoke(fileWriter, output);
         }
     }
 
     private StreamWriter GetFileHandle() {
         var logFile = File.Create("report.md");
-        return new System.IO.StreamWriter(logFile);
+        return new StreamWriter(logFile);
     }
 }
 
-public class Entry<Input, Output> {
-    public string title { get; init;}
+public abstract class Entry<Input, Output> {
+
+    public string title { get; init; }
     public Input input { get; init; }
 
-    public Entry(string title, Input input) {
-        this.title = title;
-        this.input = input;
-    }
+    public Func<Input, Output> generator { get; init; }
+    public Action<StreamWriter, Input> inputQuery { get; init; }
+    public Action<StreamWriter, Output> ouputQuery { get; init; }
 }
 
-/*
+public class CompletionsEntry: Entry<CompletionsOptions, Completions> {
 
-## Entry.Title
-
-```json
-Entry.InputJson.Serialize()
-```
-
-```json
-Entry.OutputJson.Serialize()
-```
-
-<todo>
-...
-
-*/
+    public CompletionsEntry(
+        string title,
+        CompletionsOptions input,
+        Action<StreamWriter, CompletionsOptions> inputQuery,
+        Action<StreamWriter, Completions> outputQuery,
+        OpenAIService openAIService)
+    {
+        this.title = title;
+        this.input = input;
+        this.inputQuery = inputQuery;
+        this.ouputQuery = outputQuery;
+        this.generator = (entry) => {
+                return openAIService.GetCompletionsSimple(entry);
+            };
+    }
+}
