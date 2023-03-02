@@ -1,4 +1,4 @@
-using Azure.AI.OpenAI;
+using System.Text.Json;
 
 namespace Services;
 
@@ -9,11 +9,11 @@ public class ReportService {
         Func<Input, Output> generator) {
 
         foreach(var entry in entries) {
-            var inputJson = System.Text.Json.JsonSerializer.Serialize(entry.input);
+            var inputJson = JsonSerializer.Serialize(entry.input, new JsonSerializerOptions { WriteIndented = true });
 
             var output = generator.Invoke(entry.input);
 
-            var outputJson = System.Text.Json.JsonSerializer.Serialize(output);
+            var outputJson = JsonSerializer.Serialize(output, new JsonSerializerOptions { WriteIndented = true });
 
             Console.WriteLine(inputJson);
             Console.WriteLine(outputJson);
