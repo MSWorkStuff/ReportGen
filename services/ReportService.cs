@@ -5,9 +5,10 @@ namespace Services;
 public class ReportService {
 
     public void Report(
+            string fileName,
             List<CompletionsEntry> entries)
     {
-        using var fileWriter = GetFileHandle();
+        using var fileWriter = GetFileHandle(fileName);
 
         foreach(var entry in entries) {
             fileWriter.WriteLine($"## {entry.title}");
@@ -31,10 +32,13 @@ public class ReportService {
 </details>";
     }
 
-    private StreamWriter GetFileHandle() {
-        var logFile = File.Create("report.md");
+    private StreamWriter GetFileHandle(string fileName) {
+        System.IO.Directory.CreateDirectory(REPORT_ROOT_FOLDER);
+        var logFile = File.Create($"{REPORT_ROOT_FOLDER}/{fileName}");
         return new StreamWriter(logFile);
     }
+
+    private static string REPORT_ROOT_FOLDER = "gen_report";
 }
 
 public abstract class Entry<Input, Output> {

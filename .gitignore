@@ -4,7 +4,7 @@
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 .env
 .env.ps1
-report.md
+gen_report/
 
 # User-specific files
 *.rsuser
