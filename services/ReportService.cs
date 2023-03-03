@@ -1,5 +1,3 @@
-using System.Text.Json;
-using System.IO;
 using Azure.AI.OpenAI;
 
 namespace Services;
@@ -21,6 +19,16 @@ public class ReportService {
 
             entry.ouputQuery.Invoke(fileWriter, output);
         }
+    }
+
+    public string CollapsableCode(string language, string title, string code ) {
+        return @$"
+<details>
+<summary>{title}</summary>
+```{language}
+{code}
+```
+</details>";
     }
 
     private StreamWriter GetFileHandle() {
