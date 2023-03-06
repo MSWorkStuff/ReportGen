@@ -28,7 +28,7 @@ public class LogitBias {
                     new CompletionsOptions()
                         {
                             Prompt = { "Write a haiku about lollipops" },
-                            MaxTokens = 512,
+                            MaxTokens = 40,
                             LogProbability = 1,
                             LogitBias = {
                                 { "34751", -100}
@@ -56,7 +56,7 @@ public class LogitBias {
                     new CompletionsOptions()
                         {
                             Prompt = { "Write a haiku about lollipops" },
-                            MaxTokens = 512,
+                            MaxTokens = 40,
                             LogProbability = 1,
                             LogitBias = {
                                 { "34751", 100}
